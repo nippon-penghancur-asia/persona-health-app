@@ -66,16 +66,26 @@ export default function HealthDataForm() {
   useEffect(() => {
     if (weight && height && height > 0) {
       const calculatedBMI = weight / (height * height);
-      form.setValue("bmi", parseFloat(calculatedBMI.toFixed(2)));
+      form.setValue("bmi", parseFloat(calculatedBMI.toFixed(2)), { shouldValidate: true });
     }
   }, [weight, height, form]);
 
   function onSubmit(values: FormValues) {
+    // Save to localStorage in efficient format
+    const savedData = JSON.parse(localStorage.getItem("healthData") || "[]");
+    savedData.push({
+      ...values,
+      timestamp: new Date().toISOString(),
+    });
+    localStorage.setItem("healthData", JSON.stringify(savedData));
+    
     console.log(values);
     toast({
       title: "Data Submitted Successfully!",
-      description: "Your health data has been recorded.",
+      description: "Your health data has been saved.",
     });
+    
+    form.reset();
   }
 
   return (
@@ -233,12 +243,10 @@ export default function HealthDataForm() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="cardio">Cardio</SelectItem>
-                          <SelectItem value="strength">Strength Training</SelectItem>
-                          <SelectItem value="yoga">Yoga</SelectItem>
+                          <SelectItem value="strength">Strength</SelectItem>
                           <SelectItem value="hiit">HIIT</SelectItem>
-                          <SelectItem value="sports">Sports</SelectItem>
-                          <SelectItem value="mixed">Mixed</SelectItem>
+                          <SelectItem value="cardio">Cardio</SelectItem>
+                          <SelectItem value="yoga">Yoga</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -313,7 +321,6 @@ export default function HealthDataForm() {
                         <SelectContent>
                           <SelectItem value="balanced">Balanced</SelectItem>
                           <SelectItem value="low_carb">Low Carb</SelectItem>
-                          <SelectItem value="high_protein">High Protein</SelectItem>
                           <SelectItem value="vegetarian">Vegetarian</SelectItem>
                           <SelectItem value="vegan">Vegan</SelectItem>
                           <SelectItem value="keto">Keto</SelectItem>
