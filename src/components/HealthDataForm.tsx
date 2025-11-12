@@ -35,7 +35,7 @@ const formSchema = z.object({
   workout_type: z.string().min(1, "Please select a workout type"),
   daily_meals_frequency: z.coerce.number().int().min(1, "At least 1 meal per day").max(10, "Maximum 10 meals per day"),
   diet_type: z.string().min(1, "Please select a diet type"),
-  calories: z.coerce.number().min(500, "Calories must be at least 500").max(10000, "Calories must be less than 10000"),
+  calories: z.coerce.number().min(0, "Calories cannot be negative"),
   physical_exercise: z.string().min(1, "Please select a physical exercise level"),
 });
 
@@ -62,6 +62,7 @@ export default function HealthDataForm() {
 
   const weight = form.watch("weight");
   const height = form.watch("height");
+  const bmi = form.watch("bmi");
 
   useEffect(() => {
     if (weight && height && height > 0) {
@@ -69,6 +70,26 @@ export default function HealthDataForm() {
       form.setValue("bmi", parseFloat(calculatedBMI.toFixed(2)), { shouldValidate: true });
     }
   }, [weight, height, form]);
+
+  const getBMICategory = (bmiValue: number) => {
+    if (!bmiValue) return null;
+    
+    if (bmiValue < 16) {
+      return { category: "Severely Underweight", text: "Bro, makan dong! Gak mau terbang kalo angin kenceng? 💀", color: "text-red-500" };
+    } else if (bmiValue < 18.5) {
+      return { category: "Underweight", text: "Kurang makan nih kayaknya, ayo tambah porsi! 🍚", color: "text-orange-500" };
+    } else if (bmiValue < 25) {
+      return { category: "Normal", text: "Perfect! Keep it up champ! 💪✨", color: "text-green-500" };
+    } else if (bmiValue < 30) {
+      return { category: "Overweight", text: "Waktunya diet dan olahraga nih, yuk semangat! 🏃", color: "text-yellow-500" };
+    } else if (bmiValue < 35) {
+      return { category: "Obese Class I", text: "Udah saatnya serius nih bro, kesehatan penting! ⚠️", color: "text-orange-600" };
+    } else if (bmiValue < 40) {
+      return { category: "Obese Class II", text: "Danger zone! Konsultasi dokter ASAP! 🚨", color: "text-red-600" };
+    } else {
+      return { category: "Obese Class III", text: "EMERGENCY MODE! Hubungi dokter sekarang juga! 🆘", color: "text-red-700 font-bold" };
+    }
+  };
 
   function onSubmit(values: FormValues) {
     // Save to localStorage in efficient format
@@ -177,16 +198,25 @@ export default function HealthDataForm() {
                 <FormField
                   control={form.control}
                   name="bmi"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>BMI</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="0.01" placeholder="Auto-calculated" {...field} readOnly className="bg-secondary/50" />
-                      </FormControl>
-                      <FormDescription>Automatically calculated from weight and height</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    const bmiCategory = getBMICategory(field.value);
+                    return (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>BMI</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.01" placeholder="Auto-calculated" {...field} readOnly className="bg-secondary/50" />
+                        </FormControl>
+                        <FormDescription>Automatically calculated from weight and height</FormDescription>
+                        {bmiCategory && (
+                          <div className={`mt-2 p-3 rounded-lg bg-secondary/30 border border-primary/20 ${bmiCategory.color}`}>
+                            <p className="font-semibold">{bmiCategory.category}</p>
+                            <p className="text-sm mt-1">{bmiCategory.text}</p>
+                          </div>
+                        )}
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
               </CardContent>
             </Card>
