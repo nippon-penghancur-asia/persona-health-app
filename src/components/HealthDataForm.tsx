@@ -91,22 +91,59 @@ export default function HealthDataForm() {
     }
   };
 
-  function onSubmit(values: FormValues) {
-    // Save to localStorage in efficient format
-    const savedData = JSON.parse(localStorage.getItem("healthData") || "[]");
-    savedData.push({
-      ...values,
-      timestamp: new Date().toISOString(),
-    });
-    localStorage.setItem("healthData", JSON.stringify(savedData));
-    
-    console.log(values);
-    toast({
-      title: "Data Submitted Successfully!",
-      description: "Your health data has been saved.",
-    });
-    
-    form.reset();
+  async function onSubmit(values: FormValues) {
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      
+      // Check if user is logged in
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Please login",
+          description: "You need to be logged in to submit your health data.",
+          variant: "destructive",
+        });
+        // Navigate to login
+        window.location.href = "/login";
+        return;
+      }
+
+      toast({
+        title: "Processing...",
+        description: "Submitting your data for analysis...",
+      });
+
+      // Call edge function to save data and get prediction
+      const { data, error } = await supabase.functions.invoke('predict-health', {
+        body: { healthData: values }
+      });
+
+      if (error) {
+        console.error('Error:', error);
+        toast({
+          title: "Error",
+          description: "Failed to process your data. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Success!",
+        description: "Your health data has been analyzed.",
+      });
+
+      // Navigate to results page
+      window.location.href = `/result/${data.data_id}`;
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    }
   }
 
   return (

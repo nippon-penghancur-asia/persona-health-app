@@ -14,7 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      health_data: {
+        Row: {
+          age: number
+          bmi: number
+          calories: number
+          created_at: string
+          daily_meals_frequency: number
+          diet_type: string
+          gender: number
+          height: number
+          id: string
+          physical_exercise: string
+          prediction_result: Json | null
+          session_duration: number
+          updated_at: string
+          user_id: string
+          weight: number
+          workout_frequency: number
+          workout_type: string
+        }
+        Insert: {
+          age: number
+          bmi: number
+          calories: number
+          created_at?: string
+          daily_meals_frequency: number
+          diet_type: string
+          gender: number
+          height: number
+          id?: string
+          physical_exercise: string
+          prediction_result?: Json | null
+          session_duration: number
+          updated_at?: string
+          user_id: string
+          weight: number
+          workout_frequency: number
+          workout_type: string
+        }
+        Update: {
+          age?: number
+          bmi?: number
+          calories?: number
+          created_at?: string
+          daily_meals_frequency?: number
+          diet_type?: string
+          gender?: number
+          height?: number
+          id?: string
+          physical_exercise?: string
+          prediction_result?: Json | null
+          session_duration?: number
+          updated_at?: string
+          user_id?: string
+          weight?: number
+          workout_frequency?: number
+          workout_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
